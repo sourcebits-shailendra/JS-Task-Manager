@@ -1,0 +1,435 @@
+
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+	<meta charset="utf-8">
+	<title>Tasks manager</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="description" content="">
+	<meta name="author" content="">
+
+	<!-- Le styles -->
+	<link href="css/bootstrap.css" rel="stylesheet">
+	<style>
+		body {
+		padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+		}
+
+		.red{
+
+		background-color : #F2B5B5;
+		}
+
+		.blue {
+
+		background-color : #B5D6F2;
+		}
+
+		.green {
+
+		background-color : #B5F2BB;
+		}
+
+		.yellow {
+
+		background-color : #EDF2B5;
+		}
+
+		.orange {
+
+		background-color : #F2D3B5;
+		}
+	</style>
+	<link href="css/bootstrap-responsive.css" rel="stylesheet">
+
+	<!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+	<!--[if lt IE 9]>
+		<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+
+	<!-- Le fav and touch icons -->
+	<script type="text/javascript">
+
+	  var _gaq = _gaq || [];
+	  _gaq.push(['_setAccount', 'UA-22484023-1']);
+	  _gaq.push(['_trackPageview']);
+
+	  (function() {
+	    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+	    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+	    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+	  })();
+
+	</script>	
+	</head>
+
+	<body>
+
+	<div class="navbar navbar-fixed-top">
+		<div class="navbar-inner">
+		<div class="container">
+			<a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+			</a>
+			<a class="brand" href="index.html">Tasks manager</a>
+			<div class="nav-collapse">
+			<ul class="nav">
+				<li><a href="about.html">About</a></li>
+				<li><a href="http://www.anthonypigeot.com">Website</a></li>
+				<!--<li><a href="#contact">Contact</a></li>-->
+			</ul>
+			</div><!--/.nav-collapse -->
+		</div>
+		</div>
+	</div>
+
+	<div class="container">
+		<div class='hero-unit'>
+			<h1>Malharhak's Task manager</h1>
+			<p>This is a simple task manager to plan your day. Just fill in the blanks and click add task or press enter and your tasks will appear with a countdown and change colour when approaching the deadline.<br />Thanks to localstorage, if you close the window and come back your task will still be there. <br /> Use the red cross to delete a task</p>
+		</div>
+		
+		<div class="span8 well" id="contain">
+		 <h1>Tasks</h1>
+		 <div class="row" id="redContainer">
+		
+		</div>
+		 <div class="row" id="orangeContainer">
+		
+		</div>
+		 <div class="row" id="yellowContainer">
+		
+		</div>
+		 <div class="row" id="greenContainer">
+		
+		</div>
+		 <div class="row" id="blueContainer">
+		
+		</div>
+		<div>
+			<form onsubmit="return addTask()">
+				<input type="text" name="title" id="title" placeholder="Task name" style="width : 500px;"/>
+				<br />
+				<textarea style="width : 500px;" height="150px" rows="4" cols="200" name="content" id="content" placeholder="Your task description" ></textarea> | Deadline : <input type="number" id="hour" name="hour" min="0" max="23" style="width : 30px;" placeholder="00" />h <input type="number" name="minuts" id="minuts" min="0" max="59" style="width : 30px;" placeholder="00"/>m
+				<br />
+			 	<button type="submit" class="btn btn-primary">Add task</button></form><button class="btn btn-danger" onclick="cleanTasks()">Clean finished tasks</button><br />
+ 	
+
+		</div>
+		<br />
+		<p>Created by <a href="http://www.anthonypigeot.com">Anthony Pigeot</a> - anthony.pigeot[at]gmail.com</p>
+	</div> <!-- /container -->
+
+
+	<!-- Le javascript
+	================================================== -->
+	<!-- Placed at the end of the document so the pages load faster -->
+
+	<script>
+
+
+
+calculateTimer = function(time){
+		var str = "";
+		var cents = time / 10 | 0;
+		var seconds = time / 1000 | 0;
+		var minuts = seconds / 60 | 0;
+		var hours = minuts / 60 | 0;
+		cents %= 100;
+		seconds %= 60;
+		minuts %= 60;
+		hours %= 60;
+		if (hours != 0)
+			str += hours + "h " 
+		str += minuts + "m " + seconds + 's ';
+
+		//console.log(timeToCents(minuts, seconds, cents));
+		return str;
+	}  
+
+getCurrentHour = function(){
+	var hours = new Date().toString().substring(16, 18);
+	var minuts = new Date().toString().substring(19, 21);
+	var seconds = new Date().toString().substring(22, 24);
+
+
+	return convertHour(hours, minuts, seconds);
+}  
+
+convertHour = function(hours, minuts, seconds){
+
+	if (hours >= 24)
+		hours = 23;
+
+	if (hours <0)
+		hours = 0;
+
+	if (minuts >= 60)
+		minuts = 59;
+	if (minuts < 0)
+		minuts = 0;
+
+	if (seconds >= 60)
+		seconds = 59;
+	if (seconds < 0)
+		seconds = 0;
+
+	return seconds * 1000 + minuts * 60000 + hours * 3600000;
+}
+
+
+	var containers = {
+
+		"red" : document.getElementById('redContainer'),
+		"orange" : document.getElementById('orangeContainer'),
+		"yellow" : document.getElementById('yellowContainer'),
+		"green" : document.getElementById('greenContainer'),
+		"blue" : document.getElementById('blueContainer'),
+	};
+
+	var tasks = [];
+	var CURRDATE = getCurrentHour();
+
+	var stepClasses = [
+
+		"green",
+		"yellow",
+		"orange",
+		"red",
+		"blue"
+		];
+
+	function cleanTasks(){
+		for (var i in tasks){
+			var p = tasks[i];
+			if (p.finished){
+				deleteTask(i);
+			}
+		}
+
+		saveTasks();
+	}
+	function updateTask(p){
+
+		var d = p.d;
+		var s = p.s;
+		var e = p.e;
+		var h2 = p.h2;
+
+		var step1 = Math.floor(s + ((e - s) * 0.25)); // Yellow
+		var step2 = Math.floor(s + ((e - s) * 0.50)); // Orange
+		var step3 = Math.floor(s + ((e - s) * 0.75)); // Red
+		var step4 = e;
+
+		if (CURRDATE > step4)
+		p.step = stepClasses[4];
+		if (CURRDATE <= step4)
+		p.step = stepClasses[3];
+		if (CURRDATE <= step3)
+		p.step = stepClasses[2];
+		if (CURRDATE <= step2)
+		p.step = stepClasses[1];
+		if (CURRDATE <= step1)
+		p.step = stepClasses[0];
+
+		h2.innerHTML = "Temps restant : " + calculateTimer(e - CURRDATE) + "| Deadline : " + calculateTimer(e);
+
+		if (p.step == "blue"){
+			h2.innerHTML = "FINISHED";
+			p.finished = true;
+		}
+		d.className = "span6 well " + p.step; 
+
+		if (p.step != p.lastStep){
+
+			containers[p.lastStep].removeChild(d);
+			containers[p.step].appendChild(d);
+			p.lastStep = p.step;
+		}
+
+
+
+
+
+	}
+
+	function addTask(){
+		setTimeout(addT, 33);
+		return false;
+
+	}
+
+	function addT(){
+
+		var title = document.getElementById('title').value;
+		var content = document.getElementById('content').value;
+		var hour = document.getElementById('hour').value;
+		var minuts = document.getElementById('minuts').value;
+
+		console.log (title + " - " + content + " - " + hour + "h " + minuts);
+		var seconds = 0;
+		createTaskDisplay(title, CURRDATE, convertHour(hour, minuts, seconds), content);
+
+		saveTasks();
+		//console.log("allo");
+		return false;		
+	}
+
+	function saveTasks(){
+
+		var t = [];
+		if (localStorage && tasks[0] != undefined){
+			t = [];
+			for (var i in tasks){
+				var p = tasks[i];
+				t.push({
+					t : p.t,
+					s : p.s,
+					e : p.e,
+					c : p.c
+				});
+
+			}
+			console.log(t);
+			localStorage["tasks"] = JSON.stringify(t);
+		}
+	}
+	function loadTasks(){
+
+		if (localStorage){
+
+			if (localStorage["tasks"] != undefined){
+
+				var t = JSON.parse(localStorage["tasks"]);
+				for (var i in t){
+					var p = t[i];
+
+					createTaskDisplay(p.t, p.s, p.e, p.c);
+				}
+			}
+		}
+	}
+
+
+	function deleteTask(id){
+		console.log(id);
+		containers[tasks[id].step].removeChild(tasks[id].d);
+		tasks[id] = tasks[tasks.length - 1];
+		tasks.pop();
+
+		for (var i in tasks){
+			tasks[i].id = i;
+			tasks[i].a.id = i;
+		}
+		saveTasks();
+	}
+
+	function createTaskDisplay(title, start, end, content){
+
+		var d = document.createElement('div');
+		d.id = "task-" + tasks.length;  
+		var id = tasks.length;
+		 
+		tasks.push( {
+		d : d,
+		s : start,
+		e : end,
+		c : content,
+		t : title,
+		id : id,
+		finished : false
+		});
+		var p = tasks[tasks.length - 1];
+		// Green
+		var step1 = Math.floor(start + ((end - start) * 0.25)); // Yellow
+		var step2 = Math.floor(start + ((end - start) * 0.50)); // Orange
+		var step3 = Math.floor(start + ((end - start) * 0.75)); // Red
+		var step4 = end;
+
+
+
+
+		if (CURRDATE > step4)
+		p.step = stepClasses[4];
+		if (CURRDATE <= step4)
+		p.step = stepClasses[3];
+		if (CURRDATE <= step3)
+		p.step = stepClasses[2];
+		if (CURRDATE <= step2)
+		p.step = stepClasses[1];
+		if (CURRDATE <= step1)
+		p.step = stepClasses[0];
+
+		p.lastStep = p.step;
+
+
+
+		d.className = "span6 well " + p.step; 
+
+		var a = document.createElement('a');
+		a.style.float = "right";
+
+		a.id = id;
+		a.onclick = function(){
+
+			deleteTask(this.id)
+		}
+		//a.onClick = "deleteTask(" + p.id + ")";
+
+		var i = document.createElement('img');
+		i.src = "img/cross.png";
+
+		a.appendChild(i);
+		d.appendChild(a);
+		p.a = a;
+
+		var h = document.createElement('h2');
+		h.innerHTML = title;
+		d.appendChild(h);
+		p.h = h;
+
+		var cont = document.createElement('p');
+		cont.innerHTML = content;
+		d.appendChild(cont);
+		p.cont = cont;
+
+		var h2 = document.createElement('h3');
+		h2.innerHTML = "Temps restant : " + calculateTimer(end - CURRDATE) + "| Deadline : " + calculateTimer(end);
+		d.appendChild(h2);
+		p.h2 = h2;
+
+
+		containers[p.step].appendChild(d);
+	}
+
+	function run(){
+
+		CURRDATE = getCurrentHour();
+
+		update();
+
+		setTimeout(run, 33);
+	}
+
+	function update(){
+		
+		for (var i in tasks){
+		updateTask(tasks[i]);
+		}
+	}
+	loadTasks();
+	run();
+
+	/* 
+	f2b5b5 = rouge
+	b5d6f2 = bleu
+	b5f2bb = vert
+	edf2b5 = jaune
+	f2d3b5 = orange
+	*/
+
+	</script>
+	</body>
+</html>
